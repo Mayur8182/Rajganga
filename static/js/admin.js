@@ -337,10 +337,9 @@ function renderStudentGrid(students) {
         : `<div class="student-avatar-placeholder">${init}</div>`}
       <div class="student-name">${esc(s.name)}</div>
       <div class="student-meta">
-        ${s.college ? `<div>🏛️ ${esc(s.college)}</div>` : ''}
-        ${s.course  ? `<div>📖 ${esc(s.course)}</div>`  : ''}
-        ${s.village ? `<div>🏡 ${esc(s.village)}</div>` : ''}
-        ${s.phone   ? `<div>📞 ${esc(s.phone)}</div>`   : ''}
+        ${s.roll_number ? `<div>🆔 Roll: ${esc(s.roll_number)}</div>` : ''}
+        ${s.phone       ? `<div>📞 Phone: ${esc(s.phone)}</div>`   : ''}
+        ${s.email       ? `<div>✉️ Email: ${esc(s.email)}</div>`   : ''}
       </div>
       <div class="student-tags">${tags}</div>
       <div style="font-size:11px;color:var(--text2);font-family:monospace;margin-bottom:10px;">${s.username}</div>
@@ -358,9 +357,9 @@ function filterStudents() {
   let list   = _allStudents.filter(s =>
     !q || s.name?.toLowerCase().includes(q)
        || s.room?.toLowerCase().includes(q)
-       || s.course?.toLowerCase().includes(q)
-       || s.college?.toLowerCase().includes(q)
-       || s.village?.toLowerCase().includes(q)
+       || s.roll_number?.toLowerCase().includes(q)
+       || s.phone?.toLowerCase().includes(q)
+       || s.email?.toLowerCase().includes(q)
        || s.username?.toLowerCase().includes(q)
   );
   if(sort==='name') list.sort((a,b)=>(a.name||'').localeCompare(b.name||''));

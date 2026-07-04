@@ -62,9 +62,9 @@ function getLocation() {
     if(!navigator.geolocation){reject(new Error('Geolocation not supported by this device.'));return;}
     navigator.geolocation.getCurrentPosition(
       pos => {
-        // Enforce strict high accuracy threshold (within 50m) to prevent mock locations or location errors
-        if(pos.coords.accuracy && pos.coords.accuracy > 50) {
-          reject(new Error(`Location accuracy too poor (${Math.round(pos.coords.accuracy)}m). Please step outside or enable GPS/Wi-Fi.`));
+        // Relaxed accuracy threshold for web/IP-based geolocation
+        if(pos.coords.accuracy && pos.coords.accuracy > 100000) {
+          reject(new Error(`Location accuracy too poor (${Math.round(pos.coords.accuracy)}m). Please enable GPS/Wi-Fi.`));
           return;
         }
         resolve({lat:pos.coords.latitude, lon:pos.coords.longitude});

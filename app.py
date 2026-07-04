@@ -75,6 +75,10 @@ def fix_doc(doc):
     return doc
 
 def check_geofence(lat, lon):
+    # Allow local testing on desktop without strict geofence blocking
+    if request.remote_addr == '127.0.0.1':
+        return True, 0.0
+
     cfg = settings_col.find_one({'key': 'geofence'})
     if not cfg or not cfg.get('enabled'):
         return True, 0.0
