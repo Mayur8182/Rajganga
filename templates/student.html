@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Portal — Raj Ganga Gopalak Chatralaya</title>
+  <meta name="description" content="Student portal for hostel attendance, gate log and leave management">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Gate Out Reason Modal -->
+<div class="modal-overlay" id="gate-out-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">🚪 Going Outside?</h2>
+      <button class="modal-close" onclick="closeModal('gate-out-modal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Reason for going out <span class="req">*</span></label>
+      <textarea class="form-control" id="gate-reason" rows="3" placeholder="e.g. College lab, market visit, medical appointment..."></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px;">
+      <button class="btn btn-secondary" onclick="closeModal('gate-out-modal')">Cancel</button>
+      <button class="btn btn-danger" onclick="doGateOut()">🚪 Mark Exit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Leave Application Modal -->
+<div class="modal-overlay" id="leave-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">🏖️ Apply for Leave</h2>
+      <button class="modal-close" onclick="closeModal('leave-modal')">✕</button>
+    </div>
+    <div class="two-col">
+      <div class="form-group">
+        <label class="form-label">From Date <span class="req">*</span></label>
+        <input class="form-control" type="date" id="leave-from">
+      </div>
+      <div class="form-group">
+        <label class="form-label">To Date <span class="req">*</span></label>
+        <input class="form-control" type="date" id="leave-to">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Reason <span class="req">*</span></label>
+      <textarea class="form-control" id="leave-reason" rows="3" placeholder="Explain the reason for your leave request..."></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px;">
+      <button class="btn btn-secondary" onclick="closeModal('leave-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitLeave()">📤 Submit Application</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<div class="student-layout">
+
+  <!-- Topbar -->
+  <div class="student-topbar">
+    <div class="brand">
+      <div style="background:linear-gradient(135deg,#f59e0b,#f97316);width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">🏛️</div>
+      <div>
+        <div class="brand-name">Raj Ganga Gopalak Chatralaya</div>
+        <div class="brand-sub" id="student-name-top">Loading...</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="badge" id="gate-status-badge">🏠 Inside</span>
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+      <button class="btn btn-sm btn-secondary" onclick="doLogout()">🚪 Logout</button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="student-content">
+
+    <!-- Profile Header -->
+    <div class="student-profile-header">
+      <div id="profile-photo-wrap">
+        <div class="profile-photo-placeholder" id="profile-initials">?</div>
+      </div>
+      <div class="profile-info">
+        <h2 id="profile-name-top">Loading...</h2>
+        <p id="profile-sub-top" style="color:var(--text2);font-size:12px;"></p>
+        <div class="profile-tags" id="profile-tags-top"></div>
+      </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="student-nav">
+      <div class="s-nav-item active" id="nav-home" onclick="showStudentSection('home')">
+        <span class="s-nav-icon">🏠</span> Home
+      </div>
+      <div class="s-nav-item" id="nav-attendance" onclick="showStudentSection('attendance')">
+        <span class="s-nav-icon">📅</span> Attendance
+      </div>
+      <div class="s-nav-item" id="nav-gate" onclick="showStudentSection('gate')">
+        <span class="s-nav-icon">🚪</span> Gate Log
+      </div>
+      <div class="s-nav-item" id="nav-leave" onclick="showStudentSection('leave')">
+        <span class="s-nav-icon">🏖️</span> Leave
+      </div>
+      <div class="s-nav-item" id="nav-profile" onclick="showStudentSection('profile')">
+        <span class="s-nav-icon">👤</span> Profile
+      </div>
+    </div>
+
+    <!-- ═══ HOME ═══ -->
+    <div class="section active" id="s-section-home">
+      <!-- Attendance Card -->
+      <div class="card" style="margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+          <div style="font-size:36px;" id="att-status-icon">⏰</div>
+          <div>
+            <div style="font-size:16px;font-weight:800;" id="att-status-text">Checking...</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:3px;" id="att-status-sub">Loading today's status</div>
+          </div>
+        </div>
+        <button class="big-action-btn mark-present" id="mark-att-btn" onclick="markAttendance()">
+          <span id="mark-att-icon">✅</span>
+          <span id="mark-att-text">Mark Today's Attendance</span>
+        </button>
+        <div class="info-box warning" style="margin-top:12px;font-size:12px;">
+          <span>📍</span>
+          <span>You must be inside hostel premises to mark attendance (location verified)</span>
+        </div>
+      </div>
+
+      <!-- Gate Banner -->
+      <div class="gate-banner in" id="gate-banner" style="margin-bottom:14px;">
+        <div class="gb-icon">🏠</div>
+        <div class="gb-text">
+          <div class="title" id="gate-banner-title">Inside Hostel</div>
+          <div class="sub" id="gate-banner-sub">You are currently inside</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+        <button class="big-action-btn gate-out" id="gate-out-btn" onclick="openGateOut()">
+          🚪 Mark Exit
+        </button>
+        <button class="big-action-btn gate-in" id="gate-in-btn" onclick="doGateIn()">
+          🏠 Mark Return
+        </button>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="three-col" style="margin-bottom:14px;">
+        <div class="mini-stat">
+          <div class="val" id="qs-present" style="color:var(--success);">—</div>
+          <div class="lbl">This Month<br>Present</div>
+        </div>
+        <div class="mini-stat">
+          <div class="val" id="qs-leave" style="color:var(--info);">—</div>
+          <div class="lbl">This Month<br>Leave</div>
+        </div>
+        <div class="mini-stat">
+          <div class="val" id="qs-pct" style="color:var(--accent);">—</div>
+          <div class="lbl">Attendance<br>%</div>
+        </div>
+      </div>
+
+      <!-- Leave Quick Apply -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">🏖️ Quick Leave Application</div>
+            <div class="card-subtitle">Apply for home or medical leave</div>
+          </div>
+          <button class="btn btn-sm btn-primary" onclick="openModal('leave-modal')">Apply Now</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ATTENDANCE ═══ -->
+    <div class="section" id="s-section-attendance">
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-header">
+          <div class="card-title">📅 Monthly Attendance</div>
+          <input type="month" class="form-control" id="cal-month" style="max-width:155px;" onchange="loadCalendar()">
+        </div>
+        <div class="attendance-legend" style="margin-bottom:14px;">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--success);"></div> Present</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--danger);"></div> Absent</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--info);"></div> Leave</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--accent);"></div> Today</div>
+        </div>
+        <div id="cal-day-headers" class="cal-grid" style="margin-bottom:6px;"></div>
+        <div id="cal-grid" class="cal-grid"></div>
+        <div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap;">
+          <div style="font-size:13px;font-weight:700;color:var(--success);">✅ <span id="cal-present-cnt">0</span> Present</div>
+          <div style="font-size:13px;font-weight:700;color:var(--danger);">❌ <span id="cal-absent-cnt">0</span> Absent</div>
+          <div style="font-size:13px;font-weight:700;color:var(--info);">🏖️ <span id="cal-leave-cnt">0</span> Leave</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ GATE LOG ═══ -->
+    <div class="section" id="s-section-gate">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <h2 style="font-size:16px;font-weight:700;">🚪 My Gate Log</h2>
+        <button class="btn btn-sm btn-secondary" onclick="loadGateTimeline()">↻ Refresh</button>
+      </div>
+      <div id="gate-timeline"><div class="spinner-center"><div class="loader"></div></div></div>
+    </div>
+
+    <!-- ═══ LEAVE ═══ -->
+    <div class="section" id="s-section-leave">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <h2 style="font-size:16px;font-weight:700;">🏖️ My Leave Applications</h2>
+        <button class="btn btn-sm btn-primary" onclick="openModal('leave-modal')">➕ Apply</button>
+      </div>
+      <div id="my-leaves-list"><div class="spinner-center"><div class="loader"></div></div></div>
+    </div>
+
+    <!-- ═══ PROFILE ═══ -->
+    <div class="section" id="s-section-profile">
+      <div class="card">
+        <div style="text-align:center;padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:18px;">
+          <div id="profile-photo-wrap-big" style="margin-bottom:12px;">
+            <div class="profile-photo-placeholder" id="profile-initials-big" style="width:88px;height:88px;font-size:32px;margin:0 auto;">?</div>
+          </div>
+          <h2 id="profile-name" style="font-size:20px;font-weight:800;">—</h2>
+          <p id="profile-username-badge" style="font-size:12px;font-family:monospace;margin-top:4px;background:var(--bg3);padding:3px 12px;border-radius:20px;display:inline-block;"></p>
+        </div>
+        <div class="three-col" style="margin-bottom:18px;">
+          <div style="text-align:center;">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:4px;">COURSE</div>
+            <div style="font-size:14px;font-weight:700;" id="profile-course">—</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:4px;">ROOM</div>
+            <div style="font-size:14px;font-weight:700;" id="profile-room">—</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:4px;">YEAR</div>
+            <div style="font-size:14px;font-weight:700;" id="profile-year">—</div>
+          </div>
+        </div>
+
+          <div style="display:flex;justify-content:space-between;padding:12px;background:var(--bg3);border-radius:10px;">
+            <span style="font-size:12px;color:var(--text2);">🆔 Roll Number</span>
+            <span style="font-size:13px;font-weight:600;" id="profile-roll">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:12px;background:var(--bg3);border-radius:10px;">
+            <span style="font-size:12px;color:var(--text2);">📧 Email ID</span>
+            <span style="font-size:13px;font-weight:600;" id="profile-email">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:12px;background:var(--bg3);border-radius:10px;">
+            <span style="font-size:12px;color:var(--text2);">📞 Phone</span>
+            <span style="font-size:13px;font-weight:600;" id="profile-phone">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:12px;background:var(--bg3);border-radius:10px;">
+            <span style="font-size:12px;color:var(--text2);">🏛️ College</span>
+            <span style="font-size:13px;font-weight:600;" id="profile-college">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:12px;background:var(--bg3);border-radius:10px;">
+            <span style="font-size:12px;color:var(--text2);">🏠 Hostel Block</span>
+            <span style="font-size:13px;font-weight:600;" id="profile-hostel">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:12px;background:var(--bg3);border-radius:10px;">
+            <span style="font-size:12px;color:var(--text2);">🏡 Village / City</span>
+            <span style="font-size:13px;font-weight:600;" id="profile-village">—</span>
+          </div>
+          
+          <!-- Container for dynamic extra fields -->
+          <div id="profile-extra-fields-container" style="display:contents;"></div>
+
+          <div style="display:flex;justify-content:space-between;padding:12px;background:var(--bg3);border-radius:10px;">
+            <span style="font-size:12px;color:var(--text2);">🔑 Username</span>
+            <span style="font-size:13px;font-weight:700;font-family:monospace;color:var(--accent);" id="profile-username">—</span>
+          </div>
+        </div>
+
+        <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border);text-align:center;">
+          <button class="btn btn-danger btn-sm" onclick="doLogout()">🚪 Logout</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /student-content -->
+</div><!-- /student-layout -->
+
+<script src="/static/js/student.js"></script>
+</body>
+</html>

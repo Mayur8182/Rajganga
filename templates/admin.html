@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — Raj Ganga Gopalak Chatralaya</title>
+  <meta name="description" content="Admin dashboard for hostel attendance management">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ═══ Add Student Wizard Modal ═══════════════════════════════ -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="wizard-title">➕ Add New Student</h2>
+      <button class="modal-close" onclick="closeModal('add-modal');resetWizard()">✕</button>
+    </div>
+
+    <!-- Step Indicator -->
+    <div class="wizard-steps" id="wizard-step-indicator">
+      <div class="ws-step active" id="ws-step-1">
+        <div class="ws-circle" id="ws-circle-1">1</div>
+        <div class="ws-label">Personal</div>
+      </div>
+      <div class="ws-line" id="ws-line-1"></div>
+      <div class="ws-step" id="ws-step-2">
+        <div class="ws-circle" id="ws-circle-2">2</div>
+        <div class="ws-label">Academic</div>
+      </div>
+      <div class="ws-line" id="ws-line-2"></div>
+      <div class="ws-step" id="ws-step-3">
+        <div class="ws-circle" id="ws-circle-3">3</div>
+        <div class="ws-label">Hostel</div>
+      </div>
+    </div>
+
+    <!-- ── Step 1: Personal Info ── -->
+    <div class="wizard-body" id="ws-body-1">
+      <div class="photo-upload" id="photo-upload-area">
+        <img id="photo-preview" src="" alt="" style="display:none;">
+        <div class="photo-placeholder" id="photo-placeholder">
+          <div class="icon">📸</div>
+          <div>Upload Photo</div>
+        </div>
+        <input type="file" id="photo-input" accept="image/*" onchange="previewPhoto(this)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Full Name <span class="req">*</span></label>
+        <input class="form-control" type="text" id="s-name" placeholder="e.g. Ramesh Kumar Patel">
+        <div class="field-error" id="err-name">Please enter full name</div>
+      </div>
+      <div class="two-col">
+        <div class="form-group">
+          <label class="form-label">Phone Number <span class="req">*</span></label>
+          <input class="form-control" type="tel" id="s-phone" placeholder="10-digit mobile" maxlength="10">
+          <div class="field-error" id="err-phone">Enter valid 10-digit number</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Village / City</label>
+          <input class="form-control" type="text" id="s-village" placeholder="e.g. Mehsana">
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="form-group">
+          <label class="form-label">Roll Number <span class="req">*</span></label>
+          <input class="form-control" type="text" id="s-roll" placeholder="e.g. 21AG034">
+          <div class="field-error" id="err-roll">Enter roll number</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email ID</label>
+          <input class="form-control" type="email" id="s-email" placeholder="e.g. ramesh@gmail.com">
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Step 2: Academic ── -->
+    <div class="wizard-body" id="ws-body-2" style="display:none;">
+      <div class="form-group">
+        <label class="form-label">College / University <span class="req">*</span></label>
+        <input class="form-control" type="text" id="s-college" placeholder="e.g. NAU — Navsari Agricultural University">
+        <div class="field-error" id="err-college">Please enter college name</div>
+      </div>
+      <div class="two-col">
+        <div class="form-group">
+          <label class="form-label">Course / Stream</label>
+          <input class="form-control" type="text" id="s-course" placeholder="e.g. B.Sc. Agriculture">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Year of Study</label>
+          <select class="form-control" id="s-year">
+            <option value="">Select year</option>
+            <option value="1st Year">1st Year</option>
+            <option value="2nd Year">2nd Year</option>
+            <option value="3rd Year">3rd Year</option>
+            <option value="4th Year">4th Year</option>
+            <option value="5th Year">5th Year</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Step 3: Hostel Details ── -->
+    <div class="wizard-body" id="ws-body-3" style="display:none;">
+      <div class="two-col">
+        <div class="form-group">
+          <label class="form-label">Hostel Block / Number <span class="req">*</span></label>
+          <input class="form-control" type="text" id="s-hostel-number" placeholder="e.g. A-Block, Hostel-2">
+          <div class="field-error" id="err-hostel">Enter hostel block/number</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Room Number</label>
+          <input class="form-control" type="text" id="s-room" placeholder="e.g. 101">
+        </div>
+      </div>
+      
+      <!-- Dynamic Extra Fields Section -->
+      <div style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--border);">
+        <label class="form-label">➕ Custom Extra Details (Optional)</label>
+        <div id="wizard-extra-fields-container" style="display:flex; flex-direction:column; gap:8px;"></div>
+        <button type="button" class="btn btn-xs btn-secondary" onclick="addCustomFieldToWizard()" style="margin-top:8px;">➕ Add Dynamic Field</button>
+      </div>
+
+      <div class="info-box info" style="margin-top:14px;">
+        <span>ℹ️</span>
+        <div>
+          Username and password will be <b>auto-generated</b> after adding.
+          Note them down and share with the student.
+        </div>
+      </div>
+
+      <!-- Credentials shown after success -->
+      <div id="cred-result" style="display:none;" class="cred-box">
+        <h3>✅ Student Added — Login Credentials</h3>
+        <div class="cred-row">
+          <span>Username</span>
+          <span class="cred-val" id="cred-user"></span>
+        </div>
+        <div class="cred-row">
+          <span>Password</span>
+          <span class="cred-val" id="cred-pass"></span>
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-top:8px;">
+          ⚠️ Password shown only once — share with student immediately!
+        </div>
+      </div>
+    </div>
+
+    <!-- Wizard Navigation -->
+    <div class="wizard-footer">
+      <button class="btn btn-secondary" id="ws-prev-btn" onclick="wizardPrev()" style="display:none;">← Back</button>
+      <div style="flex:1;"></div>
+      <button class="btn btn-primary" id="ws-next-btn" onclick="wizardNext()">Next →</button>
+      <button class="btn btn-primary" id="ws-submit-btn" onclick="submitAddStudent()" style="display:none;">✅ Add Student</button>
+      <button class="btn btn-success" id="ws-done-btn" onclick="closeModal('add-modal');resetWizard();loadStudents();" style="display:none;">Done ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Reset Password Modal ══════════════════════════════════ -->
+<div class="modal-overlay" id="cred-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">🔑 Login Credentials</h2>
+      <button class="modal-close" onclick="closeModal('cred-modal')">✕</button>
+    </div>
+    <div class="cred-box">
+      <h3>Student Login Credentials</h3>
+      <div class="cred-row"><span>Username</span><span class="cred-val" id="modal-cred-user"></span></div>
+      <div class="cred-row"><span>Password</span><span class="cred-val" id="modal-cred-pass"></span></div>
+      <div style="font-size:11px;color:var(--text2);margin-top:8px;">⚠️ Share immediately — password shown only once after reset.</div>
+    </div>
+    <div style="text-align:right;margin-top:16px;">
+      <button class="btn btn-primary" onclick="closeModal('cred-modal')">Done ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Bulk Import Modal ════════════════════════════════════ -->
+<div class="modal-overlay" id="bulk-modal">
+  <div class="modal modal-xl">
+    <div class="modal-header">
+      <h2 class="modal-title">📋 Bulk Import Students</h2>
+      <button class="modal-close" onclick="closeModal('bulk-modal');resetBulk()">✕</button>
+    </div>
+    <div id="bulk-step-1">
+      <div class="info-box info" style="margin-bottom:14px;">
+        <span>ℹ️</span>
+        <div>
+          <b>Format:</b> One student per line — <code>Name, Room, Course, Phone</code> (comma or tab).<br>
+          <b>Tip:</b> Paste directly from Excel / Google Sheets — it works!
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <button class="btn btn-sm btn-secondary" onclick="fillBulkExample()">📝 Load Example</button>
+        <button class="btn btn-sm btn-secondary" onclick="downloadBulkTemplate()">⬇ CSV Template</button>
+        <button class="btn btn-sm btn-secondary" onclick="clearBulkText()">🗑 Clear</button>
+      </div>
+      <textarea id="bulk-textarea" class="form-control" rows="11"
+        placeholder="Paste student list here...&#10;&#10;Name, Room, Course, Phone&#10;Ram Sharma, 101, BSc Agri, 9876543210&#10;Shyam Patel, 102, MSc, 9876543211"
+        style="font-family:monospace;font-size:13px;line-height:1.6;"></textarea>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">
+        <button class="btn btn-secondary" onclick="closeModal('bulk-modal');resetBulk()">Cancel</button>
+        <button class="btn btn-primary" onclick="parseBulk()">👁 Preview & Review →</button>
+      </div>
+    </div>
+    <div id="bulk-step-2" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-size:14px;font-weight:700;">📋 Preview — <span id="bulk-preview-count">0</span> students</div>
+        <button class="btn btn-sm btn-secondary" onclick="showBulkStep(1)">← Edit</button>
+      </div>
+      <div class="table-wrap" style="max-height:300px;overflow-y:auto;">
+        <table>
+          <thead><tr><th>#</th><th>Name</th><th>Room</th><th>Course</th><th>Phone</th><th></th></tr></thead>
+          <tbody id="bulk-preview-tbody"></tbody>
+        </table>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">
+        <button class="btn btn-secondary" onclick="showBulkStep(1)">← Edit</button>
+        <button class="btn btn-primary" id="bulk-import-btn" onclick="submitBulkImport()">🚀 Import All</button>
+      </div>
+    </div>
+    <div id="bulk-step-3" style="display:none;">
+      <div class="info-box success" style="margin-bottom:12px;">
+        <span>✅</span><b id="bulk-done-msg"></b>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <button class="btn btn-sm btn-primary" onclick="copyAllCreds()">📋 Copy All</button>
+        <button class="btn btn-sm btn-secondary" onclick="downloadCreds()">⬇ Download CSV</button>
+      </div>
+      <div class="table-wrap" style="max-height:320px;overflow-y:auto;">
+        <table>
+          <thead><tr><th>#</th><th>Name</th><th>Room</th><th>Username</th><th>Password</th></tr></thead>
+          <tbody id="bulk-result-tbody"></tbody>
+        </table>
+      </div>
+      <div style="text-align:right;margin-top:14px;">
+        <button class="btn btn-primary" onclick="closeModal('bulk-modal');resetBulk();loadStudents()">Done ✓</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ App Layout ════════════════════════════════════════════ -->
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">🏛️</div>
+      <div class="brand-text">
+        <h2>Raj Ganga</h2>
+        <p>Chatralaya Admin</p>
+      </div>
+    </div>
+
+    <div class="nav-label">Main</div>
+    <div class="nav-item active" onclick="showSection('dashboard')">
+      <span class="nav-icon">📊</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="showSection('students')">
+      <span class="nav-icon">👥</span> Students
+    </div>
+    <div class="nav-item" onclick="showSection('attendance')">
+      <span class="nav-icon">✅</span> Attendance
+    </div>
+
+    <div class="nav-label" style="margin-top:16px;">Hostel</div>
+    <div class="nav-item" onclick="showSection('gate')">
+      <span class="nav-icon">🚪</span> Gate Log
+    </div>
+    <div class="nav-item" onclick="showSection('leaves')">
+      <span class="nav-icon">🏖️</span> Leaves
+      <span class="nav-badge" id="leaves-badge" style="display:none;">0</span>
+    </div>
+
+    <div class="nav-label" style="margin-top:16px;">System</div>
+    <div class="nav-item" onclick="showSection('settings')">
+      <span class="nav-icon">⚙️</span> Settings
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-pill">
+        <div class="avatar">A</div>
+        <div class="user-info">
+          <div class="user-name">Administrator</div>
+          <div class="user-role">Admin Account</div>
+        </div>
+        <button onclick="doLogout()" title="Logout" style="background:none;border:none;cursor:pointer;font-size:15px;color:var(--text2);margin-left:auto;padding:4px;">🚪</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="page-title">Dashboard</div>
+        <div class="topbar-date"  id="topbar-date"></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div id="currently-out-badge" style="display:none;" class="badge badge-out">
+          🚶 <span id="out-count">0</span> Outside
+        </div>
+        <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+        <button class="btn btn-sm btn-secondary" onclick="doLogout()" style="padding:6px 10px; font-size:12px;">🚪 Logout</button>
+      </div>
+    </div>
+
+    <div class="content-area">
+
+      <!-- ═══ DASHBOARD ═══ -->
+      <div class="section active" id="section-dashboard">
+        <div class="page-header">
+          <h1 id="dash-greeting">Good day! 👋</h1>
+          <p id="dash-date-label">Today's overview</p>
+        </div>
+
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card" style="--accent-color:#6366f1">
+            <div class="stat-icon">👥</div>
+            <div class="stat-value" id="stat-total">—</div>
+            <div class="stat-label">Total Students</div>
+          </div>
+          <div class="stat-card" style="--accent-color:#10b981">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value" id="stat-present">—</div>
+            <div class="stat-label">Present Today</div>
+          </div>
+          <div class="stat-card" style="--accent-color:#ef4444">
+            <div class="stat-icon">❌</div>
+            <div class="stat-value" id="stat-absent">—</div>
+            <div class="stat-label">Absent Today</div>
+          </div>
+          <div class="stat-card" style="--accent-color:#6366f1">
+            <div class="stat-icon">🏖️</div>
+            <div class="stat-value" id="stat-leave">—</div>
+            <div class="stat-label">On Leave</div>
+          </div>
+          <div class="stat-card" style="--accent-color:#f59e0b">
+            <div class="stat-icon">🚶</div>
+            <div class="stat-value" id="stat-out">—</div>
+            <div class="stat-label">Currently Out</div>
+          </div>
+          <div class="stat-card" style="--accent-color:#ec4899">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value" id="stat-pending">—</div>
+            <div class="stat-label">Pending Leaves</div>
+          </div>
+        </div>
+
+        <div class="dash-row">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">🚶 Currently Outside</div>
+                <div class="card-subtitle">Students out of hostel right now</div>
+              </div>
+              <button class="btn btn-sm btn-secondary" onclick="loadDashboard()">↻</button>
+            </div>
+            <div id="currently-out-list"><div class="spinner-center"><div class="loader"></div></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">📋 Pending Leaves</div>
+                <div class="card-subtitle">Awaiting your approval</div>
+              </div>
+              <button class="btn btn-sm btn-secondary" onclick="showSection('leaves')">View All</button>
+            </div>
+            <div id="dash-pending-leaves"><div class="spinner-center"><div class="loader"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ STUDENTS ═══ -->
+      <div class="section" id="section-students">
+        <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div>
+            <h1>👥 Students</h1>
+            <p>Manage all hostel students and credentials</p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="openModal('add-modal')">➕ Add Student</button>
+            <button class="btn btn-secondary" onclick="openModal('bulk-modal')">📋 Bulk Import</button>
+            <button class="btn btn-secondary" onclick="exportStudentsPDF()">📄 Students PDF</button>
+          </div>
+        </div>
+
+        <!-- Search / Filter bar -->
+        <div class="filters-bar" style="margin-bottom:16px;">
+          <input type="text" class="form-control" id="student-search" placeholder="🔍  Search by name, room, course..." oninput="filterStudents()" style="max-width:320px;">
+          <select class="form-control" id="student-sort" onchange="filterStudents()" style="max-width:160px;">
+            <option value="name">Sort: Name A–Z</option>
+            <option value="room">Sort: Room</option>
+            <option value="new">Sort: Newest</option>
+          </select>
+        </div>
+
+        <div id="students-grid" class="student-grid">
+          <div class="spinner-center"><div class="loader"></div></div>
+        </div>
+      </div>
+
+      <!-- ═══ ATTENDANCE ═══ -->
+      <div class="section" id="section-attendance">
+        <div class="page-header">
+          <h1>✅ Attendance</h1>
+          <p>View and manage daily attendance records</p>
+        </div>
+        <div class="filters-bar">
+          <input type="date" class="form-control" id="att-date" style="max-width:175px;">
+          <button class="btn btn-secondary" onclick="loadAttendance()">↻ Refresh</button>
+          <button class="btn btn-secondary" onclick="downloadAttendance()">⬇ Export CSV</button>
+          <button class="btn btn-primary" onclick="exportAttendancePDF()">📄 Download PDF Report</button>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title" id="att-date-label">Today's Attendance</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <span class="badge badge-present" id="att-count-p">0 Present</span>
+              <span class="badge badge-absent"  id="att-count-a">0 Absent</span>
+              <span class="badge badge-leave"   id="att-count-l">0 Leave</span>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Photo</th><th>Name</th><th>Room</th><th>Username</th><th>Status</th><th>Time</th><th>By</th><th>Action</th></tr>
+              </thead>
+              <tbody id="att-tbody">
+                <tr><td colspan="8"><div class="spinner-center"><div class="loader"></div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+          <div class="card" style="margin-top:16px;">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div class="card-title">📅 Monthly Summary</div>
+                <input type="month" class="form-control" id="month-select" style="max-width:155px;" onchange="loadMonthly()">
+              </div>
+              <button class="btn btn-sm btn-secondary" onclick="exportMonthlyCSV()">⬇ Export CSV</button>
+            </div>
+            <div class="table-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Room</th><th>College</th><th>Present</th><th>Leave</th><th>Absent (est.)</th></tr></thead>
+              <tbody id="monthly-tbody">
+                <tr><td colspan="6"><div class="spinner-center"><div class="loader"></div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ GATE LOG ═══ -->
+      <div class="section" id="section-gate">
+        <div class="page-header">
+          <h1>🚪 Gate Log</h1>
+          <p>Track student entry and exit from hostel</p>
+        </div>
+        <div class="filters-bar">
+          <input type="date" class="form-control" id="gate-date" style="max-width:175px;">
+          <button class="btn btn-secondary" onclick="loadGateLogs()">↻ Refresh</button>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title" id="gate-date-label">Today's Gate Log</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Student</th><th>Action</th><th>Time</th><th>Return Time</th><th>Duration</th><th>Reason</th><th>Action</th></tr></thead>
+              <tbody id="gate-tbody">
+                <tr><td colspan="7"><div class="spinner-center"><div class="loader"></div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ LEAVES ═══ -->
+      <div class="section" id="section-leaves">
+        <div class="page-header">
+          <h1>🏖️ Leave Management</h1>
+          <p>Review and approve student leave applications</p>
+        </div>
+        <div class="filters-bar">
+          <select class="form-control" id="leave-filter" onchange="loadLeaves()" style="max-width:170px;">
+            <option value="">All Leaves</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Student</th><th>From</th><th>To</th><th>Reason</th><th>Applied</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody id="leaves-tbody">
+                <tr><td colspan="7"><div class="spinner-center"><div class="loader"></div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SETTINGS ═══ -->
+      <div class="section" id="section-settings">
+        <div class="page-header">
+          <h1>⚙️ Settings</h1>
+          <p>Configure hostel geo-fence and system preferences</p>
+        </div>
+
+        <div class="card" style="max-width:560px;margin-bottom:16px;">
+          <div class="card-header">
+            <div class="card-title">📍 Geo-Fence (Location Lock)</div>
+          </div>
+          <div class="info-box info" style="margin-bottom:16px;">
+            <span>ℹ️</span>
+            <span>When enabled, students can only mark attendance or gate log from <b>within hostel premises</b>. Anyone outside the radius will be blocked.</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Hostel / Institution Name</label>
+            <input class="form-control" type="text" id="hostel-name" value="Raj Ganga Gopalak Chatralaya">
+          </div>
+          <div class="form-group" style="display:flex;align-items:center;gap:12px;">
+            <input type="checkbox" id="geo-enabled" style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer;">
+            <label for="geo-enabled" style="cursor:pointer;font-size:14px;font-weight:600;">Enable Geo-Fence (Location Lock)</label>
+          </div>
+          <div class="two-col" style="margin-top:8px;">
+            <div class="form-group">
+              <label class="form-label">Latitude</label>
+              <input class="form-control" type="number" id="geo-lat" placeholder="e.g. 23.0225" step="any">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Longitude</label>
+              <input class="form-control" type="number" id="geo-lon" placeholder="e.g. 72.5714" step="any">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Allowed Radius (meters)</label>
+            <input class="form-control" type="number" id="geo-radius" placeholder="100" min="20" max="2000" value="100">
+          </div>
+          <div style="display:flex;gap:10px;margin-top:4px;flex-wrap:wrap;">
+            <button class="btn btn-secondary" onclick="useMyLocation()">📍 Use My Location</button>
+            <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+          </div>
+          <div id="location-status" style="margin-top:10px;font-size:12px;color:var(--text2);"></div>
+        </div>
+
+        <div class="card" style="max-width:560px;">
+          <div class="card-title" style="margin-bottom:14px;">🎨 Appearance</div>
+          <div style="display:flex;align-items:center;gap:14px;">
+            <span style="font-size:13px;">Theme:</span>
+            <button class="btn btn-secondary" onclick="toggleTheme()" id="theme-settings-btn">🌙 Switch to Light Mode</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<script src="/static/js/admin.js"></script>
+</body>
+</html>

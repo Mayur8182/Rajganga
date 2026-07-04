@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — Raj Ganga Gopalak Chatralaya</title>
+  <meta name="description" content="Hostel attendance management system login">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="toast-container" id="toast-container"></div>
+
+<div class="login-page">
+  <!-- Theme Toggle -->
+  <div style="position:fixed;top:14px;right:16px;z-index:10;">
+    <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()">🌙</button>
+  </div>
+
+  <div class="login-card" style="max-width:460px;">
+    <!-- Logo -->
+    <div class="login-logo">
+      <div style="width:100%; max-height:160px; overflow:hidden; border-radius:12px; margin-bottom:15px; border: 1.5px solid var(--border);">
+        <img src="/static/hostel.png" alt="Raj Ganga Gopalak Chatralaya" style="width:100%; height:auto; object-fit:cover; display:block;">
+      </div>
+      <h1 style="font-size:18px; font-weight:800;">Raj Ganga Gopalak Chatralaya</h1>
+      <p>Hostel Attendance Management System</p>
+    </div>
+
+    <!-- Form -->
+    <form id="login-form" onsubmit="doLogin(event)">
+      <div class="form-group">
+        <label class="form-label" for="username">Username</label>
+        <input class="form-control" type="text" id="username" name="username" autocomplete="username"
+               placeholder="Enter your username" required>
+        <div class="field-error" id="err-username">Username is required</div>
+      </div>
+      <div class="form-group" style="position:relative;">
+        <label class="form-label" for="password">Password</label>
+        <input class="form-control" type="password" id="password" name="password" autocomplete="current-password"
+               placeholder="Enter your password" required>
+        <button type="button" onclick="togglePwd()" title="Show/Hide password"
+          style="position:absolute;right:12px;bottom:11px;background:none;border:none;cursor:pointer;font-size:16px;color:var(--text3);" id="pwd-eye">👁</button>
+        <div class="field-error" id="err-password">Password is required</div>
+      </div>
+
+      <div id="login-error" class="info-box danger" style="display:none;margin-bottom:14px;font-size:13px;">
+        <span>❌</span><span id="login-error-msg">Invalid credentials</span>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full" id="login-btn">
+        <span id="login-btn-icon">🔐</span>
+        <span id="login-btn-text">Sign In</span>
+      </button>
+    </form>
+
+    <div style="text-align:center; margin-top:20px;">
+      <span style="font-size:13px; color:var(--text2);">New student? </span>
+      <button class="btn btn-sm btn-secondary" onclick="openRegisterModal()" style="padding:6px 12px; font-size:12px; margin-left:4px;">📝 Register Here</button>
+    </div>
+
+    <!-- Hint removed for security -->
+  </div>
+</div>
+
+<!-- Student Self-Registration Modal -->
+<div class="modal-overlay" id="register-modal">
+  <div class="modal" style="max-width:540px;">
+    <div class="modal-header">
+      <h2 class="modal-title">📝 Student Registration</h2>
+      <button class="modal-close" onclick="closeRegisterModal()">✕</button>
+    </div>
+    
+    <form id="register-form" onsubmit="submitRegister(event)">
+      <!-- Photo upload inside registration -->
+      <div class="photo-upload" id="reg-photo-upload-area" style="margin-bottom: 14px;">
+        <img id="reg-photo-preview" src="" alt="" style="display:none;">
+        <div class="photo-placeholder" id="reg-photo-placeholder">
+          <div class="icon">📸</div>
+          <div style="font-size:10px;">Upload Photo</div>
+        </div>
+        <input type="file" id="reg-photo-input" accept="image/*" onchange="previewRegPhoto(this)">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Full Name <span class="req">*</span></label>
+        <input class="form-control" type="text" id="reg-name" placeholder="Ramesh Kumar Patel" required>
+      </div>
+
+      <div class="two-col">
+        <div class="form-group">
+          <label class="form-label">Username <span class="req">*</span></label>
+          <input class="form-control" type="text" id="reg-username" placeholder="Choose a username" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Roll Number <span class="req">*</span></label>
+          <input class="form-control" type="text" id="reg-roll" placeholder="e.g. 21AG034" required>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="form-group">
+          <label class="form-label">Room Number <span class="req">*</span></label>
+          <input class="form-control" type="text" id="reg-room" placeholder="e.g. 104" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mobile Number <span class="req">*</span></label>
+          <input class="form-control" type="tel" id="reg-phone" placeholder="10-digit phone" maxlength="10" required>
+        </div>
+      </div>
+
+
+
+      <div class="form-group">
+        <label class="form-label">Password <span class="req">*</span></label>
+        <input class="form-control" type="password" id="reg-pass" placeholder="Create login password" required>
+      </div>
+
+      <!-- Registration Credentials Result -->
+      <div id="reg-result" style="display:none;" class="cred-box">
+        <h3 style="color:var(--success);">✅ Registration Successful!</h3>
+        <p style="font-size:12px; color:var(--text2); margin-bottom:10px;">You can now log in with your chosen username and password.</p>
+      </div>
+
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:14px;" id="reg-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeRegisterModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="reg-submit-btn">🚀 Submit Registration</button>
+      </div>
+      <div style="display:flex; justify-content:flex-end; margin-top:14px; display:none;" id="reg-done-action">
+        <button type="button" class="btn btn-success" onclick="closeRegisterModal()">Done ✓</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function toggleTheme(){
+  const html=document.documentElement;
+  const dark=html.getAttribute('data-theme')!=='light';
+  html.setAttribute('data-theme',dark?'light':'dark');
+  localStorage.setItem('theme',dark?'light':'dark');
+  document.getElementById('theme-btn').textContent=dark?'☀️':'🌙';
+}
+(function initTheme(){
+  const saved=localStorage.getItem('theme')||'dark';
+  document.documentElement.setAttribute('data-theme',saved);
+  const btn=document.getElementById('theme-btn');
+  if(btn)btn.textContent=saved==='dark'?'🌙':'☀️';
+})();
+
+function togglePwd(){
+  const inp=document.getElementById('password');
+  const btn=document.getElementById('pwd-eye');
+  inp.type=inp.type==='password'?'text':'password';
+  btn.textContent=inp.type==='password'?'👁':'🙈';
+}
+
+function toast(msg,type='info'){
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div');
+  t.className=`toast toast-${type}`;
+  const icons={success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'};
+  t.innerHTML=`<span>${icons[type]}</span><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(()=>t.remove(),4500);
+}
+
+async function doLogin(e){
+  e.preventDefault();
+  const username=document.getElementById('username').value.trim();
+  const password=document.getElementById('password').value;
+  const btn=document.getElementById('login-btn');
+  const errDiv=document.getElementById('login-error');
+
+  if(!username){document.getElementById('err-username').classList.add('show');return;}
+  if(!password){document.getElementById('err-password').classList.add('show');return;}
+  document.getElementById('err-username').classList.remove('show');
+  document.getElementById('err-password').classList.remove('show');
+  errDiv.style.display='none';
+
+  btn.disabled=true;
+  document.getElementById('login-btn-icon').innerHTML='<span class="spinner spinner-w" style="width:14px;height:14px;"></span>';
+  document.getElementById('login-btn-text').textContent='Signing in...';
+
+  try{
+    const res =await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
+    const data=await res.json();
+    if(res.ok&&data.redirect){
+      document.getElementById('login-btn-icon').textContent='✅';
+      document.getElementById('login-btn-text').textContent='Success!';
+      setTimeout(()=>window.location.href=data.redirect, 400);
+    } else {
+      errDiv.style.display='flex';
+      document.getElementById('login-error-msg').textContent=data.error||'Invalid credentials';
+      btn.disabled=false;
+      document.getElementById('login-btn-icon').textContent='🔐';
+      document.getElementById('login-btn-text').textContent='Sign In';
+    }
+  }catch(err){
+    errDiv.style.display='flex';
+    document.getElementById('login-error-msg').textContent='Connection error. Please try again.';
+    btn.disabled=false;
+    document.getElementById('login-btn-icon').textContent='🔐';
+    document.getElementById('login-btn-text').textContent='Sign In';
+  }
+}
+
+/* Registration Modal Controls */
+function openRegisterModal() {
+  document.getElementById('register-modal').classList.add('open');
+}
+function closeRegisterModal() {
+  document.getElementById('register-modal').classList.remove('open');
+  resetRegisterForm();
+}
+function resetRegisterForm() {
+  document.getElementById('register-form').reset();
+  document.getElementById('reg-photo-preview').style.display = 'none';
+  document.getElementById('reg-photo-placeholder').style.display = 'block';
+  document.getElementById('reg-result').style.display = 'none';
+  document.getElementById('reg-actions').style.display = 'flex';
+  document.getElementById('reg-done-action').style.display = 'none';
+}
+function previewRegPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById('reg-photo-preview');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    document.getElementById('reg-photo-placeholder').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+async function submitRegister(e) {
+  e.preventDefault();
+  const btn = document.getElementById('reg-submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  const fd = new FormData();
+  fd.append('name', document.getElementById('reg-name').value.trim());
+  fd.append('username', document.getElementById('reg-username').value.trim());
+  fd.append('roll_number', document.getElementById('reg-roll').value.trim());
+  fd.append('room', document.getElementById('reg-room').value.trim());
+  fd.append('phone', document.getElementById('reg-phone').value.trim());
+  fd.append('password', document.getElementById('reg-pass').value);
+  
+  const photo = document.getElementById('reg-photo-input').files[0];
+  if(photo) fd.append('photo', photo);
+
+  try {
+    const res = await fetch('/api/register', { method: 'POST', body: fd });
+    const data = await res.json();
+    if(res.ok) {
+      document.getElementById('reg-result').style.display = 'block';
+      document.getElementById('reg-actions').style.display = 'none';
+      document.getElementById('reg-done-action').style.display = 'flex';
+      toast('Registration Successful!', 'success');
+    } else {
+      toast(data.error || 'Registration failed', 'error');
+      btn.disabled = false;
+      btn.textContent = '🚀 Submit Registration';
+    }
+  } catch(err) {
+    toast('Network connection error', 'error');
+    btn.disabled = false;
+    btn.textContent = '🚀 Submit Registration';
+  }
+}
+</script>
+</body>
+</html>
