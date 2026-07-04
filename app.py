@@ -628,13 +628,6 @@ def student_mark():
     if session.get('role') != 'student':
         return jsonify({'error': 'Student only'}), 403
     d = request.get_json()
-    lat, lon = d.get('lat'), d.get('lon')
-    if lat is None or lon is None:
-        return jsonify({'error': 'Location required. Please enable GPS.'}), 400
-    within, dist = check_geofence(lat, lon)
-    if not within:
-        return jsonify({'error': f'You are {dist:.0f}m away from hostel. Attendance can only be marked within hostel premises.',
-                        'outside': True, 'distance': round(dist, 1)}), 403
     sid   = session['student_id']
     today = ist_date()
     existing = attendance_col.find_one({'student_id': sid, 'date': today})
@@ -686,14 +679,7 @@ def gate_action():
         return jsonify({'error': 'Student only'}), 403
     d = request.get_json()
     action = d.get('action')
-    lat, lon = d.get('lat'), d.get('lon')
-    reason   = d.get('reason', '')
-    if lat is None or lon is None:
-        return jsonify({'error': 'Location required. Please enable GPS.'}), 400
-    within, dist = check_geofence(lat, lon)
-    if not within:
-        return jsonify({'error': f'Gate log must be made within hostel premises. You are {dist:.0f}m away.',
-                        'outside': True}), 403
+    reason = d.get('reason', '')
     sid  = session['student_id']
     last = gate_logs_col.find_one({'student_id': sid}, sort=[('timestamp', DESCENDING)])
     if action == 'out':

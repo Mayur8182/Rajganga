@@ -163,11 +163,10 @@ async function markAttendance() {
   btn.disabled=true; icon.textContent='📡'; txt.textContent='Getting location...';
 
   try {
-    const coords = await getLocation();
     icon.textContent='⏳'; txt.textContent='Marking attendance...';
     const res  = await fetch('/api/student/attendance/mark',{
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({lat:coords.lat,lon:coords.lon})
+      body:JSON.stringify({})
     });
     const data = await res.json();
     if(res.ok) { toast(data.message,'success'); loadHome(); }
@@ -202,10 +201,9 @@ async function doGateAction(action, reason) {
   const inBtn =document.getElementById('gate-in-btn');
   outBtn.disabled=true; inBtn.disabled=true;
   try {
-    const coords = await getLocation();
     const res    = await fetch('/api/gate',{
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action,reason,lat:coords.lat,lon:coords.lon})
+      body:JSON.stringify({action,reason})
     });
     const data = await res.json();
     if(res.ok) {
