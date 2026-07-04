@@ -639,7 +639,7 @@ def student_mark():
     attendance_col.update_one(
         {'student_id': sid, 'date': today},
         {'$set': {'student_id': sid, 'date': today, 'status': 'present',
-                  'marked_at': ist_now(), 'marked_by': 'student', 'lat': lat, 'lon': lon}},
+                  'marked_at': ist_now(), 'marked_by': 'student'}},
         upsert=True)
     return jsonify({'success': True, 'message': 'Attendance marked successfully!'})
 
@@ -688,7 +688,7 @@ def gate_action():
         gate_logs_col.insert_one({
             'student_id': sid, 'student_name': session['name'],
             'action': 'out', 'reason': reason,
-            'timestamp': ist_now(), 'lat': lat, 'lon': lon, 'return_time': None
+            'timestamp': ist_now(), 'return_time': None
         })
         return jsonify({'success': True, 'message': 'Marked OUT. Please return before curfew!'})
     elif action == 'in':
@@ -697,7 +697,7 @@ def gate_action():
         gate_logs_col.update_one({'_id': last['_id']}, {'$set': {'return_time': ist_now()}})
         gate_logs_col.insert_one({
             'student_id': sid, 'student_name': session['name'],
-            'action': 'in', 'timestamp': ist_now(), 'lat': lat, 'lon': lon
+            'action': 'in', 'timestamp': ist_now()
         })
         return jsonify({'success': True, 'message': 'Welcome back! Marked IN.'})
     return jsonify({'error': 'Invalid action'}), 400
